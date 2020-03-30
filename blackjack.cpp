@@ -3,14 +3,14 @@
 using namespace std;
 
 int main(int argc, char **argv){
-  string suits = "♤♣♥♢🂡";
-  cout << suits << endl;
+  srand(time(0));
 
-  // CardDeck *deck = new CardDeck();
-  CardDeck deck;
-  // for(int)
-  // cout << deck->m_deck[0].printCard() << "\n";
-  // cout << deck->m_deck[0].m_unicodeVal << "\n";
-  cout << deck.m_deck[0].printCard() << "\n";
+  CardDeck *deck = new CardDeck();
+  deck->printDeck();
+  cout << "Shuffling deck...\n";
+  deck->shuffle();
+  cout << "Deck Shuffled...\n";
+  deck->printDeck();
+
   return 0;
 }
