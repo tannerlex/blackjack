@@ -90,3 +90,13 @@ class CardDeck {
 
   private:
 };
+
+class Hand {
+  public: 
+  Hand(){
+    m_aces = 0;
+    m_val = 0;
+  }
+  vector <Card> m_hand;
+  int m_aces, m_val;
+};
