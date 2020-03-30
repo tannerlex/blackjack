@@ -17,8 +17,8 @@ string Card::printCard(){
 
 void CardDeck::printDeck(){
   cout << "Deck:\n";
-  for(int i = 0; i < m_deck.size(); ++i){
-    cout << m_deck[i].printCard() << " ";
+  for(int i = 0; i < m_deck.size(); ++i){ /* for each card */
+    cout << m_deck[i].printCard() << " "; /* print to console */
   }
   cout << endl;
 }
