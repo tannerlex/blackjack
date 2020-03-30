@@ -23,6 +23,12 @@ void CardDeck::printDeck(){
   cout << endl;
 }
 
+Card CardDeck::deal(){
+  Card rtn = m_deck.back();
+  m_deck.pop_back();
+  return rtn;
+}
+
 const map<int, string> Card::cardCh = {
   {SPADE + ACE, "🂡"},
   {SPADE + 2, "🂢"},

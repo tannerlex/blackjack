@@ -31,15 +31,40 @@ class Card {
   Card();
   explicit Card(int unicodeVal)
     : m_unicodeVal(unicodeVal)
-  {}
+  {
+    switch (unicodeVal % 0x10)
+    {
+    case ACE:
+      m_faceValue = 11;
+      break;
+    case JACK:
+    case QUEEN:
+    case KING:
+      m_faceValue = 10;
+      break;
+    
+    /* error cases - invalid cards */
+    case 0:
+    case KNIGHT:
+    case 0xF:
+      cout << "Error creating Card - invalid unicode value\n\n";
+      break;
+
+    /* cases 2-10 */
+    default:
+      m_faceValue = unicodeVal % 0x10;
+      break;
+    }
+  }
 
   string printCard();
   string printBack();
   int m_unicodeVal;
+  int getFaceVal(){return m_faceValue;};
 
   private:
   static const map<int, string> cardCh;
-  // string m_face;
+  int m_faceValue;
   // string m_suit; 
 };
 
@@ -47,7 +72,6 @@ class CardDeck {
   public:
   CardDeck(){
     // int i = 0;
-
     /* initialize a 52 card deck */
     for(int suit = SPADE; suit <= CLUB; suit += SUITROW){
       for(int face = ACE; face <= KING; ++face){
