@@ -15,13 +15,13 @@ using namespace std;
 /* unicode values for playing card characters */
 #define BACK "🂠"
 #define SPADE 0x1F0A0
-// #define HEART 0x1F0B0
-// #define DIAMOND 0x1F0C0
+#define HEART 0x1F0B0
+#define DIAMOND 0x1F0C0
 #define CLUB 0x1F0D0
 #define ACE 0x1
-// #define JACK 0xB
+#define JACK 0xB
 #define KNIGHT 0xC
-// #define QUEEN 0xD
+#define QUEEN 0xD
 #define KING 0xE
 #define SUITROW 0x10
 
