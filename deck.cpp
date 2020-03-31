@@ -3,31 +3,67 @@
 #include <time.h> /* used to seed rand with current time */
 using namespace std;
 
-void CardDeck::shuffle(){
+/* unicode values for playing card characters */
+#define BACK "🂠"
+#define HEART 0x1F0B0
+#define DIAMOND 0x1F0C0
+
+void CardDeck::shuffle(){ /* randomized the order of cards in deck */
   random_shuffle(m_deck.begin(), m_deck.end());
 }
 
-string Card::printBack(){
+string Card::printBack(){ /* prints unicode card back character */
   return BACK;
 }
 
-string Card::printCard(){
+string Card::printCard(){ /* prints card using unicode character */
   return cardCh.at(m_unicodeVal);
 }
 
-void CardDeck::printDeck(){
+void CardDeck::printDeck(){ /* prints each card of deck in order */
   cout << "Deck:\n";
   for(int i = 0; i < m_deck.size(); ++i){ /* for each card */
     cout << m_deck[i].printCard() << " "; /* print to console */
   }
-  cout << endl;
-}
+  cout << "\n";
+}/* printDeck() */
 
-Card CardDeck::deal(){
+Card CardDeck::deal(){ /* deal a single card from the deck */
   Card rtn = m_deck.back();
   m_deck.pop_back();
   return rtn;
+}/* deal() */
+
+bool Hand::hit(int holdVal){ /* determine whether to hit or not */
+  return m_val < holdVal;
 }
+
+void Hand::update(){
+  /* The update function for the Hand class is used to track the
+     value of the hand and the number of aces. It must be used
+     every time a hand is changed (e.g. a card is dealt) for these
+     numbers to be accurate.                                       */
+  m_val = 0;
+  m_aces = 0;
+  for(int i = 0; i < m_hand.size(); ++i){
+    int val = m_hand[i].getFaceVal();
+    m_val += val;
+    if(val == ACEVAL){++m_aces;}
+  }
+  m_val = aceException(m_aces, m_val);
+}/* update() */
+
+int Hand::aceException(int aces, int handVal){
+  /* The aceException function in the Hand class solves the hand
+     value by accounting for the alternative values of aces. It
+     does this by a recursive method.                              */
+  if(aces){
+    if(handVal > BLACKJACK){
+      handVal = aceException(aces-1, handVal - (ACEVAL - ACE));
+    }
+  }
+  return handVal;
+} /* aceException() */
 
 const map<int, string> Card::cardCh = {
   {SPADE + ACE, "🂡"},

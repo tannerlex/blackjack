@@ -4,21 +4,14 @@
 #include <vector>
 using namespace std;
 
-// #define DECKSIZE 52
-
-/* unicode values for suit characters */
-// #define SPADECH "♤"
-// #define HEARTCH "♥"
-// #define DIAMONDCH "♢"
-// #define CLUBCH "♣"
+#define BLACKJACK 21
+#define ACEVAL 11
 
 /* unicode values for playing card characters */
-#define BACK "🂠"
 #define SPADE 0x1F0A0
-#define HEART 0x1F0B0
-#define DIAMOND 0x1F0C0
 #define CLUB 0x1F0D0
 #define ACE 0x1
+#define FACECRD 10
 #define JACK 0xB
 #define KNIGHT 0xC
 #define QUEEN 0xD
@@ -26,7 +19,8 @@ using namespace std;
 #define SUITROW 0x10
 
 class Card {
-  /* This "Card" class */
+  /* Card class includes properties and functions unique to a
+     playing card.                                                 */
   public:
   Card();
   explicit Card(int unicodeVal)
@@ -35,12 +29,12 @@ class Card {
     switch (unicodeVal % 0x10)
     {
     case ACE:
-      m_faceValue = 11;
+      m_faceValue = ACEVAL; /* default value for ace */
       break;
     case JACK:
     case QUEEN:
     case KING:
-      m_faceValue = 10;
+      m_faceValue = FACECRD;
       break;
     
     /* error cases - invalid cards */
@@ -59,26 +53,27 @@ class Card {
 
   string printCard();
   string printBack();
-  int m_unicodeVal;
-  int getFaceVal(){return m_faceValue;};
+  int getFaceVal(){return m_faceValue;}
 
   private:
-  static const map<int, string> cardCh;
-  int m_faceValue;
-  // string m_suit; 
+  int m_unicodeVal; /* unique identifier for each card in a deck */
+  static const map<int, string> cardCh; /* unicode value, character*/
+  int m_faceValue; /* face value of each playing card (ace = 11) */
 };
 
 class CardDeck {
+  /* CardDeck class is comprised of a vector of cards and
+     functions necessary to the management of a 52 card deck for
+     blackjack                                                     */
   public:
   CardDeck(){
     // int i = 0;
     /* initialize a 52 card deck */
-    for(int suit = SPADE; suit <= CLUB; suit += SUITROW){
-      for(int face = ACE; face <= KING; ++face){
-        if(face == KNIGHT){++face;}
-        Card card(suit + face);
-        m_deck.push_back(card);
-        // cout << m_deck[i++].printCard() << endl;
+    for(int suit = SPADE; suit <= CLUB; suit += SUITROW){/*ea. suit*/
+      for(int face = ACE; face <= KING; ++face){ /* foreach face */
+        if(face == KNIGHT){++face;}/* knight not used in blackjack */
+        Card card(suit + face); /* determine which card */
+        m_deck.push_back(card); /* add card to the deck */
       } /* end for each face */
     } /* end for each suit */
   } /* end constructor */
@@ -86,17 +81,24 @@ class CardDeck {
   void shuffle();
   void printDeck();
   Card deal();
-  vector<Card> m_deck;
-
-  private:
+  vector<Card> m_deck; /* deck of cards from which cards are dealt */
 };
 
 class Hand {
   public: 
-  Hand(){
-    m_aces = 0;
-    m_val = 0;
-  }
-  vector <Card> m_hand;
-  int m_aces, m_val;
+  Hand()
+    : m_aces(0)
+    , m_val(0)
+  {}
+
+  int aceException(int aces, int handVal);
+  void update();
+  int getVal(){return m_val;}
+  int getAces(){return m_aces;}
+  bool hit(int holdVal);
+  vector <Card> m_hand; /* cards dealt to this player in round */
+
+  private:
+  int m_aces; /* number of aces */
+  int m_val; /* value of hand */
 };
