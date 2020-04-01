@@ -20,17 +20,17 @@ int main(/*int argc, char **argv*/){
     Hand dealerHand, playerHand; /* sets of dealt cards */
     bool playerBusts = false;
 
-    CardDeck *deck = new CardDeck();
+    CardDeck deck;
     cout << "Shuffling deck... ";
-    deck->shuffle();
+    deck.shuffle();
     // deck->printDeck();
 
     /* deal some cards and print to console */
     cout << "Dealing...\n";
-    dealerHand.m_hand.push_back(deck->deal());
-    playerHand.m_hand.push_back(deck->deal());
-    dealerHand.m_hand.push_back(deck->deal());
-    playerHand.m_hand.push_back(deck->deal());
+    dealerHand.m_hand.push_back(deck.deal());
+    playerHand.m_hand.push_back(deck.deal());
+    dealerHand.m_hand.push_back(deck.deal());
+    playerHand.m_hand.push_back(deck.deal());
     playerHand.update();
     dealerHand.update();
     cout << "Dealer's cards: ";
@@ -42,7 +42,7 @@ int main(/*int argc, char **argv*/){
     /* player play */
     while(playerHand.hit(P1HOLD)) {
       /* player requests the dealer to deal another card */
-      playerHand.m_hand.push_back(deck->deal());
+      playerHand.m_hand.push_back(deck.deal());
       playerHand.update();
       cout << "Player's cards: ";
       for(int i = 0; i < playerHand.m_hand.size(); ++i) {
@@ -54,7 +54,7 @@ int main(/*int argc, char **argv*/){
     /* dealer play */
     while(dealerHand.hit(DLHOLD)) {
       /* deals a card to itself */
-      dealerHand.m_hand.push_back(deck->deal());
+      dealerHand.m_hand.push_back(deck.deal());
       dealerHand.update();
     }
     cout << "Dealer's cards: ";
