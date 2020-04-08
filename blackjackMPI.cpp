@@ -46,9 +46,10 @@ int main(int argc, char **argv){
     }
 
     else {
-        int recvHand [2];
+        int recvHand[2];
         MPI_Recv(&recvHand,2,MPI_INT,0,DEALTAG,MCW,MPI_STATUS_IGNORE); // each processor receives a split of the data
 
+        cout << recvHand[0] << " " << recvHand[1] << "\n";
         Card firstCard(recvHand[0]);
         Card secondCard(recvHand[1]);
         myHand.m_hand.push_back(firstCard);
@@ -56,7 +57,7 @@ int main(int argc, char **argv){
         myHand.update();
 
         cout << "Rank: " << rank << " recieved hand: " << endl;
-        cout << myHand.m_hand[1].printCard() << " " << myHand.m_hand[2].printCard() << endl;
+        cout << myHand.m_hand[0].printCard() << " " << myHand.m_hand[1].printCard() << endl;
     }
 
     MPI_Finalize();
