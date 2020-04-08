@@ -46,17 +46,26 @@ bool Hand::hit(int holdVal){ /* determine whether to hit or not */
 
 void Hand::update(){
   /* The update function for the Hand class is used to track the
-     value of the hand and the number of aces. It must be used
-     every time a hand is changed (e.g. a card is dealt) for these
-     numbers to be accurate.                                       */
+     value of the hand, whether that is a hard or soft value and
+     the number of aces. It must be used every time a hand is
+     changed (e.g. a card is dealt) for these numbers to be 
+     accurate.                                                     */
   m_val = 0;
   m_aces = 0;
+  m_softVal = false;
   for(int i = 0; i < m_hand.size(); ++i){
     int val = m_hand[i].getFaceVal();
     m_val += val;
     if(val == ACEVAL){++m_aces;}
   }
   m_val = aceException(m_aces, m_val);
+  if(m_aces){
+    int val = 0;
+    for(int i = 0; i < m_hand.size(); ++i){
+      val += m_hand[i].getFaceVal();
+    }
+    m_softVal = (val != m_val);
+  }
 }/* update() */
 
 int Hand::aceException(int aces, int handVal){

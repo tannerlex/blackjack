@@ -95,6 +95,7 @@ class Hand {
   int aceException(int aces, int handVal);
   void update();
   int getVal(){return m_val;}
+  int softVal(){return m_softVal;}
   int getAces(){return m_aces;}
   bool hit(int holdVal);
   void printHand();
@@ -103,4 +104,5 @@ class Hand {
   private:
   int m_aces; /* number of aces */
   int m_val; /* value of hand */
+  bool m_softVal; /* value is soft due to presence of Ace = 11 */
 };
