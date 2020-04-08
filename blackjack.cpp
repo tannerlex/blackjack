@@ -34,9 +34,9 @@ int main(/*int argc, char **argv*/){
     playerHand.update();
     dealerHand.update();
     cout << "Dealer's cards: ";
-    cout << dealerHand.m_hand[0].printCard() << " " << dealerHand.m_hand[1].printBack() << "\n";
-    cout << "Player's cards: ";
-    cout << playerHand.m_hand[0].printCard() << " " << playerHand.m_hand[1].printCard() << " value: ";
+    dealerHand.printHand();
+    cout << "\nPlayer's cards: ";
+    playerHand.printHand();
     cout << playerHand.getVal() << "\n";
 
     /* player play */
@@ -45,9 +45,7 @@ int main(/*int argc, char **argv*/){
       playerHand.m_hand.push_back(deck.deal());
       playerHand.update();
       cout << "Player's cards: ";
-      for(int i = 0; i < playerHand.m_hand.size(); ++i) {
-        cout << playerHand.m_hand[i].printCard() << " ";
-      }
+      playerHand.printHand();
       cout << "value: " << playerHand.getVal() << "\n";
     }
 
@@ -58,9 +56,7 @@ int main(/*int argc, char **argv*/){
       dealerHand.update();
     }
     cout << "Dealer's cards: ";
-    for(int i = 0; i < dealerHand.m_hand.size(); ++i) {
-      cout << dealerHand.m_hand[i].printCard() << " ";
-    }
+    dealerHand.printHand();
     cout << "value: " << dealerHand.getVal() << "\n";
 
     /* determine the results of the round */
