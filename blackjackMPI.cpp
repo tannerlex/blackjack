@@ -11,22 +11,35 @@
 
 #define MCW MPI_COMM_WORLD
 #define DEALTAG 0
+#define HITTAG 1
+#define DLHOLD 16
 
 using namespace std;
 
 int dealCard(int player, CardDeck &deck){
     int dealtCard;
-    Card sendCard;
+    Card sendCard(deck.deal());
 
-    sendCard = deck.deal();
     dealtCard = sendCard.getUCV();
     MPI_Send(&dealtCard,1,MPI_INT,player,DEALTAG,MCW);
 
     return dealtCard;
 }
 
+void recvCard(Hand &curHand){
+    int card;
+    MPI_Recv(&card,1,MPI_INT,0,DEALTAG,MCW,MPI_STATUS_IGNORE); // each processor receives a split of the data
+    Card recvCard(card);
+    curHand.m_hand.push_back(recvCard);
+    curHand.update();
+}
+
 int main(int argc, char **argv){
     int rank, size;
+    srand(time(0));
+
+    // hold[rank] = true: player is holding
+    bool hold[size]; // hold[0] = true means all players are holding
     Hand myHand;
 
     MPI_Init(&argc, &argv);
@@ -49,23 +62,60 @@ int main(int argc, char **argv){
             dealCard(i,deck);
             dealCard(i,deck);
         }
+
+        for(int i=0;i<size;i++){ // set all players to hit
+            hold[i] = false;
+        }
+
+        while(!hold[0]){
+            hold[0] = true;
+            for(int i=1;i<size;i++){
+                if(!hold[i]){
+                    cout << "check player " << i << " for hit\n";
+                    int hit;
+                    MPI_Recv(&hit,1,MPI_INT,i,HITTAG,MCW,MPI_STATUS_IGNORE); // each processor receives a split of the data
+                    hold[i] = !hit;
+                    if(!hold[i]){
+                        cout << "dealing card to player: " << i << "\n";
+                        dealCard(i,deck);
+                        hold[0] = false;
+                    }
+                }
+            }
+            cout << "Hold[0] while loop: " << hold[0] << endl;
+        }
+
+        /* dealer play */
+        while(myHand.hit(DLHOLD)) {
+            /* deals a card to itself */
+            myHand.m_hand.push_back(deck.deal());
+            myHand.update();
+        }
+        cout << "Dealer's cards: ";
+        myHand.printHand();
+        cout << "value: " << myHand.getVal() << "\n";
     }
 
     else {
-        int recvHand[2];
-        MPI_Recv(&recvHand[0],1,MPI_INT,0,DEALTAG,MCW,MPI_STATUS_IGNORE); // each processor receives a split of the data
-        MPI_Recv(&recvHand[1],1,MPI_INT,0,DEALTAG,MCW,MPI_STATUS_IGNORE); // each processor receives a split of the data
+        recvCard(myHand);
+        recvCard(myHand);
 
-        // cout << recvHand[0] << " " << recvHand[1] << "\n";
-        Card firstCard(recvHand[0]);
-        Card secondCard(recvHand[1]);
-        myHand.m_hand.push_back(firstCard);
-        myHand.m_hand.push_back(secondCard);
-        myHand.update();
+        myHand.printHand();
+        
+        int hit = myHand.hit(16);
+
+        while(hit){
+            MPI_Send(&hit,1,MPI_INT,0,HITTAG,MCW);
+            recvCard(myHand);
+            hit = myHand.hit(16);
+        }
 
         cout << "Rank: " << rank << " recieved hand: " << endl;
-        cout << myHand.m_hand[0].printCard() << " " << myHand.m_hand[1].printCard() << endl;
+        myHand.printHand();
+        cout << "value: " << myHand.getVal() << "\n";
     }
+
+    cout << rank << " about to finalize \n";
 
     MPI_Finalize();
     return 0;
