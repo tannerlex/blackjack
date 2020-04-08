@@ -94,6 +94,8 @@ int main(int argc, char **argv){
     cout << "Dealer's cards: ";
     myHand.printHand();
     cout << "value: " << myHand.getVal() << "\n";
+    deck.printDeck();
+    cout << "\n";
   } /* end if dealer */
   else { /* if player */
     recvCard(myHand);
@@ -109,6 +111,7 @@ int main(int argc, char **argv){
       recvCard(myHand);
       hit = myHand.hit(16);
     }
+    MPI_Send(&hit,1,MPI_INT,0,HITTAG,MCW);
 
     cout << "Rank: " << rank << " recieved hand: " << endl;
     myHand.printHand();
