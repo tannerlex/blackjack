@@ -60,7 +60,6 @@ int main(int argc, char **argv){
     myHand.m_hand.push_back(deck.deal());
     myHand.m_hand.push_back(deck.deal());
     for(int i = 1; i < size; i++){
-      cout << "dealing 2 cards to player " << i << "\n";
       dealCard(i,deck);
       dealCard(i,deck);
     }
@@ -69,23 +68,19 @@ int main(int argc, char **argv){
       hold[0] = true; /* reset to hold */
       for(int i = 1; i < size; i++){ /* for each player */
         if(!hold[i]){ /* if player has not indicated hold status */
-          cout << "check player " << i << " for hit\n";
           int hit; /* integer to recieve a hit request */
           MPI_Recv(&hit,1,MPI_INT,i,HITTAG,MCW,MPI_STATUS_IGNORE);
           if(hit){ /* if player has not indicated hold status */
             /* deal card to player */
-            cout << "dealing card to player: " << i << "\n";
             dealCard(i,deck);
             hold[0] = false; /* this player just hit, repeat loop */
           }
           hold[i] = !hit;
         }
       }
-      cout << "Hold[0] while loop: " << hold[0] << endl;
     } /* end while() still dealing round */
 
     /* dealer play */
-    cout << "Dealer is going to play now.\n";
     while(myHand.hit(DLHOLD)) {
       /* deals a card to itself */
       myHand.m_hand.push_back(deck.deal());
@@ -118,7 +113,7 @@ int main(int argc, char **argv){
     cout << "value: " << myHand.getVal() << "\n";
   } /* end if player */
 
-  cout << rank << " about to finalize \n";
+  //cout << rank << " about to finalize \n";
 
   MPI_Finalize();
   return 0;
