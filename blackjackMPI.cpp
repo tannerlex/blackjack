@@ -17,106 +17,106 @@
 using namespace std;
 
 int dealCard(int player, CardDeck &deck){
-    int dealtCard;
-    Card sendCard(deck.deal());
-
-    dealtCard = sendCard.getUCV();
-    MPI_Send(&dealtCard,1,MPI_INT,player,DEALTAG,MCW);
-
-    return dealtCard;
+  /* deal a card to player */
+  Card sendCard(deck.deal()); /* pull card from deck */
+  int dealtCard = sendCard.getUCV(); /* unicode val of dealt card */
+  MPI_Send(&dealtCard,1,MPI_INT,player,DEALTAG,MCW); /* send card */
+  return dealtCard; /* used if tracking which cards were dealt */
 }
 
 void recvCard(Hand &curHand){
-    int card;
-    MPI_Recv(&card,1,MPI_INT,0,DEALTAG,MCW,MPI_STATUS_IGNORE); // each processor receives a split of the data
-    Card recvCard(card);
-    curHand.m_hand.push_back(recvCard);
-    curHand.update();
+  /* recieve a card into hand */
+  int card; /* unicode val of card being received */
+  MPI_Recv(&card,1,MPI_INT,0,DEALTAG,MCW,MPI_STATUS_IGNORE);
+  Card recvCard(card); /* create a card object from unicode val */
+  curHand.m_hand.push_back(recvCard); /* add card to hand */
+  curHand.update(); /* update hand numbers */
 }
 
 int main(int argc, char **argv){
-    int rank, size;
-    srand(time(0));
+  int rank, size;
+  srand(time(0));
+  Hand myHand;
+  MPI_Init(&argc, &argv);
+  MPI_Comm_rank(MCW, &rank);
+  MPI_Comm_size(MCW, &size);
 
-    // hold[rank] = true: player is holding
-    bool hold[size]; // hold[0] = true means all players are holding
-    Hand myHand;
-
-    MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MCW, &rank);
-    MPI_Comm_size(MCW, &size);
-
-    if(rank==0){ // dealer
-        // shuffle deck
-        CardDeck deck;
-
-        cout << "Shuffling deck... ";
-        deck.shuffle();
-        deck.printDeck();
-
-        myHand.m_hand.push_back(deck.deal());
-        myHand.m_hand.push_back(deck.deal());
-
-        /* initial deal to all players */
-        for(int i=1; i<size; i++){
-            dealCard(i,deck);
-            dealCard(i,deck);
-        }
-
-        for(int i=0;i<size;i++){ // set all players to hit
-            hold[i] = false;
-        }
-
-        while(!hold[0]){
-            hold[0] = true;
-            for(int i=1;i<size;i++){
-                if(!hold[i]){
-                    cout << "check player " << i << " for hit\n";
-                    int hit;
-                    MPI_Recv(&hit,1,MPI_INT,i,HITTAG,MCW,MPI_STATUS_IGNORE); // each processor receives a split of the data
-                    hold[i] = !hit;
-                    if(!hold[i]){
-                        cout << "dealing card to player: " << i << "\n";
-                        dealCard(i,deck);
-                        hold[0] = false;
-                    }
-                }
-            }
-            cout << "Hold[0] while loop: " << hold[0] << endl;
-        }
-
-        /* dealer play */
-        while(myHand.hit(DLHOLD)) {
-            /* deals a card to itself */
-            myHand.m_hand.push_back(deck.deal());
-            myHand.update();
-        }
-        cout << "Dealer's cards: ";
-        myHand.printHand();
-        cout << "value: " << myHand.getVal() << "\n";
+  if(rank==0){ /* dealer */
+    /* hold[rank] = true: player is holding and can be ignored for 
+       the rest of the round.
+       hold[0] = true means all players are holding                */
+    bool hold[size];
+    for(int i=0;i<size;i++){ /* initialize all players to hit */
+      hold[i] = false;
     }
 
-    else {
-        recvCard(myHand);
-        recvCard(myHand);
+    /* generate and shuffle deck */
+    CardDeck deck; 
+    cout << "Shuffling deck... ";
+    deck.shuffle();
+    deck.printDeck();
 
-        myHand.printHand();
+    /* initial deal to all players */
+    myHand.m_hand.push_back(deck.deal());
+    myHand.m_hand.push_back(deck.deal());
+    for(int i = 1; i < size; i++){
+      cout << "dealing 2 cards to player " << i << "\n";
+      dealCard(i,deck);
+      dealCard(i,deck);
+    }
+
+    while(!hold[0]){ /* while still dealing round */
+      hold[0] = true; /* reset to hold */
+      for(int i = 1; i < size; i++){ /* for each player */
+        if(!hold[i]){ /* if player has not indicated hold status */
+          cout << "check player " << i << " for hit\n";
+          int hit; /* integer to recieve a hit request */
+          MPI_Recv(&hit,1,MPI_INT,i,HITTAG,MCW,MPI_STATUS_IGNORE);
+          if(hit){ /* if player has not indicated hold status */
+            /* deal card to player */
+            cout << "dealing card to player: " << i << "\n";
+            dealCard(i,deck);
+            hold[0] = false; /* this player just hit, repeat loop */
+          }
+          hold[i] = !hit;
+        }
+      }
+      cout << "Hold[0] while loop: " << hold[0] << endl;
+    } /* end while() still dealing round */
+
+    /* dealer play */
+    cout << "Dealer is going to play now.\n";
+    while(myHand.hit(DLHOLD)) {
+      /* deals a card to itself */
+      myHand.m_hand.push_back(deck.deal());
+      myHand.update();
+    }
+    cout << "Dealer's cards: ";
+    myHand.printHand();
+    cout << "value: " << myHand.getVal() << "\n";
+  } /* end if dealer */
+  else { /* if player */
+    recvCard(myHand);
+    recvCard(myHand);
+
+    myHand.printHand();
         
-        int hit = myHand.hit(16);
+    int hit = myHand.hit(16);
+    MPI_Send(&hit,1,MPI_INT,0,HITTAG,MCW);
 
-        while(hit){
-            MPI_Send(&hit,1,MPI_INT,0,HITTAG,MCW);
-            recvCard(myHand);
-            hit = myHand.hit(16);
-        }
-
-        cout << "Rank: " << rank << " recieved hand: " << endl;
-        myHand.printHand();
-        cout << "value: " << myHand.getVal() << "\n";
+    while(hit){
+      MPI_Send(&hit,1,MPI_INT,0,HITTAG,MCW);
+      recvCard(myHand);
+      hit = myHand.hit(16);
     }
 
-    cout << rank << " about to finalize \n";
+    cout << "Rank: " << rank << " recieved hand: " << endl;
+    myHand.printHand();
+    cout << "value: " << myHand.getVal() << "\n";
+  } /* end if player */
 
-    MPI_Finalize();
-    return 0;
+  cout << rank << " about to finalize \n";
+
+  MPI_Finalize();
+  return 0;
 }
