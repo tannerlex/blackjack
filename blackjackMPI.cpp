@@ -25,6 +25,7 @@ int main(int argc, char **argv){
     if(rank==0){ // dealer
         // shuffle deck
         CardDeck deck;
+        vector<Hand> dealtHands;
         Hand sendHand;
         int dealtCards[2];
 
@@ -34,14 +35,19 @@ int main(int argc, char **argv){
 
         myHand.m_hand.push_back(deck.deal());
         myHand.m_hand.push_back(deck.deal());
-        sendHand.m_hand.push_back(deck.deal());
-        sendHand.m_hand.push_back(deck.deal());
 
-        // deal to all player
+        /* initial deal to all players */
         for(int i=1; i<size; i++){
-            dealtCards[0] = sendHand.m_hand[0].getUCV();
-            dealtCards[1] = sendHand.m_hand[1].getUCV();
-            MPI_Send(dealtCards,2,MPI_INT,i,DEALTAG,MCW);
+          /* create hand to deal to single player */
+          sendHand.m_hand.push_back(deck.deal());
+          sendHand.m_hand.push_back(deck.deal());
+          dealtHands.push_back(sendHand); /* add to dealt hands */
+          sendHand.m_hand.clear(); /* reset hand for next player */
+
+          for(int j=0; j<dealtHands[i-1].m_hand.size(); ++j){
+            dealtCards[j] = dealtHands[i-1].m_hand[j].getUCV();
+          }
+          MPI_Send(dealtCards,2,MPI_INT,i,DEALTAG,MCW);
         }
     }
 
@@ -49,7 +55,7 @@ int main(int argc, char **argv){
         int recvHand[2];
         MPI_Recv(&recvHand,2,MPI_INT,0,DEALTAG,MCW,MPI_STATUS_IGNORE); // each processor receives a split of the data
 
-        cout << recvHand[0] << " " << recvHand[1] << "\n";
+        // cout << recvHand[0] << " " << recvHand[1] << "\n";
         Card firstCard(recvHand[0]);
         Card secondCard(recvHand[1]);
         myHand.m_hand.push_back(firstCard);
