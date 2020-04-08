@@ -54,6 +54,7 @@ class Card {
   string printCard();
   string printBack();
   int getFaceVal(){return m_faceValue;}
+  int getUCV(){return m_unicodeVal;}
 
   private:
   int m_unicodeVal; /* unique identifier for each card in a deck */
