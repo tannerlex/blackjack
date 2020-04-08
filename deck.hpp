@@ -97,6 +97,7 @@ class Hand {
   int getVal(){return m_val;}
   int getAces(){return m_aces;}
   bool hit(int holdVal);
+  void printHand();
   vector <Card> m_hand; /* cards dealt to this player in round */
 
   private:

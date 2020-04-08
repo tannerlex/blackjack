@@ -28,6 +28,12 @@ void CardDeck::printDeck(){ /* prints each card of deck in order */
   cout << "\n";
 }/* printDeck() */
 
+void Hand::printHand(){ /* prints each card of hand in order */
+  for(int i = 0; i < m_hand.size(); ++i){ /* for each card */
+    cout << m_hand[i].printCard() << " "; /* print to console */
+  }
+}
+
 Card CardDeck::deal(){ /* deal a single card from the deck */
   Card rtn = m_deck.back();
   m_deck.pop_back();
