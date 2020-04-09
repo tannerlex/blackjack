@@ -17,16 +17,18 @@
 #define INITDEAL 2
 #define MCW MPI_COMM_WORLD
 #define NUMDECKS 4
-#define TOTALROUNDS 5
+#define TOTALROUNDS 500
 
 using namespace std;
 
 /* function prototypes */
-void dealerPlay(int *wins, int size);
+void dealerPlay(int *wins, int *ties, int size);
 void playerPlay(int rank);
 int dealCard(int player, CardDeck &deck);
 void recvCard(Hand &curHand);
-void roundResults(Hand &pl, Hand &dl, int &pw, int &dw);
+void roundResults(
+  Hand &pl, Hand &dl, int &pw, int &dw, int &pt, int &dt);
+void printResults(int *wins, int *ties, int size);
 
 int main(int argc, char **argv){
   /* initialize MPI variables */
@@ -38,12 +40,14 @@ int main(int argc, char **argv){
   /* algorithm setup */
   int running = TOTALROUNDS; /* number of rounds left to play */
   int wins[size]; /* number of rounds each player has won */
-  for(int i = 0; i < size; ++i){wins[i] = 0;}
+  int ties[size]; /* number of rounds resulting in a push */
+  /* initialize counters to zero */
+  for(int i = 0; i < size; ++i){wins[i] = 0; ties[i] = 0;}
   srand(time(0));
 
   while(running--){ /* while there are still rounds left to play */
     if(DEALER == rank){ /* dealer */
-      dealerPlay(wins, size);
+      dealerPlay(wins, ties, size);
     } /* end if dealer */
 
     else { /* if player */
@@ -55,6 +59,7 @@ int main(int argc, char **argv){
 
   /* notify user of end of play */
   if(DEALER == rank){
+    printResults(wins, ties, size);
     cout << "Dealer";
   }else{
     cout << "Player " << rank;
@@ -65,7 +70,7 @@ int main(int argc, char **argv){
   return 0;
 }
 
-void dealerPlay(int *wins, int size){
+void dealerPlay(int *wins, int *ties, int size){
   /* this function executes the dealer's tasks for a round of play */
   CardDeck deck(NUMDECKS); /* deck for the current round */
   Hand dHand; /* dealer's hand for initializing vector of hands */
@@ -85,14 +90,14 @@ void dealerPlay(int *wins, int size){
 
   /* initial deal to all players */
   for(int j = 0; j < INITDEAL; ++j){
-    dHand.m_hand.push_back(deck.deal());
+    dHand.addCard(deck.deal());
   }
   hands.push_back(dHand); /* dealer's hand is index 0 */
-  for(int i = 1; i < size; i++){
+  for(int i = 1; i < size; i++){ /* for each player */
     Hand hnd;
     for(int j = 0; j < INITDEAL; ++j){
       Card crd(dealCard(i,deck));
-      hnd.m_hand.push_back(crd);
+      hnd.addCard(crd);
     }
     hands.push_back(hnd); /* add to set of all hands at the table */
   }
@@ -114,7 +119,7 @@ void dealerPlay(int *wins, int size){
 
         if(hit){ /* if player has not indicated hold status */
           Card crd(dealCard(i,deck)); /* deal card to player */
-          hands[i].m_hand.push_back(crd); /* add to player's hand */
+          hands[i].addCard(crd); /* add to player's hand */
           hold[0] = false; /* this player just hit, repeat loop */
         }
         hold[i] = !hit; /* update player status */
@@ -125,14 +130,19 @@ void dealerPlay(int *wins, int size){
   /* dealer play */
   while(hands[DEALER].hit(DLHOLD)) { /* while not holding */
     /* deals a card to itself */
-    hands[DEALER].m_hand.push_back(deck.deal());
-    hands[DEALER].update();
+    hands[DEALER].addCard(deck.deal());
   }
   cout << "Dealer's cards: ";
   hands[DEALER].printHand();
 
   for(int i = 1; i < size; ++i){
-    roundResults(hands[i], hands[DEALER], wins[i], wins[DEALER]);
+    roundResults(
+      hands[i], 
+      hands[DEALER], 
+      wins[i], 
+      wins[DEALER], 
+      ties[i], 
+      ties[DEALER]);
   }
 } /* dealerPlay() */
 
@@ -174,11 +184,12 @@ void recvCard(Hand &curHand){
   int card; /* unicode val of card being received */
   MPI_Recv(&card,1,MPI_INT,0,DEALTAG,MCW,MPI_STATUS_IGNORE);
   Card recvCard(card); /* create a card object from unicode val */
-  curHand.m_hand.push_back(recvCard); /* add card to hand */
-  curHand.update(); /* update hand numbers */
+  curHand.addCard(recvCard); /* add card to hand */
 }
 
-void roundResults(Hand &pl, Hand &dl, int &pw, int &dw){
+void roundResults(Hand &pl, Hand &dl, /* player and dealer hands */
+                  int &pw, int &dw, /* player and dealer wins */
+                  int &pt, int &dt) /* player and dealer ties */ {
   /* roundResults analyzes the final hands of a round and records 
      and reports the results including incrementing the number of
      player wins or dealer wins.                                   */
@@ -193,6 +204,8 @@ void roundResults(Hand &pl, Hand &dl, int &pw, int &dw){
     pw++; /* chalk one up for the player */
   } else if (dl.getVal() == pl.getVal()){
     cout << "It's a push.\n";
+    pt++;
+    dt++;
   } else if (dl.getVal() > pl.getVal()){
     cout << "Dealer wins.\n";
     dw++; /* chalk one up for the dealer */
@@ -202,6 +215,22 @@ void roundResults(Hand &pl, Hand &dl, int &pw, int &dw){
   }
 } /* roundResults() */
 
+void printResults(int *wins, int *ties, int size){
+  /* print dealer results */
+  cout << "Results of " << TOTALROUNDS << " rounds:\n";
+  cout << "The dealer won " << wins[DEALER] << " rounds (";
+  cout << wins[DEALER]*100.0/TOTALROUNDS/size << "%), and had ";
+  cout << ties[DEALER] << " rounds ( ";
+  cout << ties[DEALER]*100.0/TOTALROUNDS << "%) end in a push.\n";
+
+  /* print player results */
+  for(int i = 1; i < size; ++i){
+    cout << "Player " << i << " won " << wins[i] << " rounds (";
+    cout << wins[i]*100.0/TOTALROUNDS << "%), and had ";
+    cout << ties[i] << " rounds (" << ties[i]*100.0/TOTALROUNDS;
+    cout << "%) end in a push.\n";
+  }
+}
+
 // TODO:
-// round results
 // strategy for each player

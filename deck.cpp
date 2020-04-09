@@ -28,6 +28,11 @@ void CardDeck::printDeck(){ /* prints each card of deck in order */
   cout << "\n";
 }/* printDeck() */
 
+void Hand::addCard(Card c){ /* adds a card to this hand */
+  m_hand.push_back(c); /* add card to vector of cards */
+  update(); /* update the hand metrics */
+}/* addCard() */
+
 void Hand::printHand(){ /* prints each card of hand in order */
   for(int i = 0; i < m_hand.size(); ++i){ /* for each card */
     cout << m_hand[i].printCard() << " "; /* print to console */

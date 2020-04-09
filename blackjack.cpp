@@ -27,12 +27,10 @@ int main(/*int argc, char **argv*/){
 
     /* deal some cards and print to console */
     cout << "Dealing...\n";
-    dealerHand.m_hand.push_back(deck.deal());
-    playerHand.m_hand.push_back(deck.deal());
-    dealerHand.m_hand.push_back(deck.deal());
-    playerHand.m_hand.push_back(deck.deal());
-    playerHand.update();
-    dealerHand.update();
+    dealerHand.addCard(deck.deal());
+    playerHand.addCard(deck.deal());
+    dealerHand.addCard(deck.deal());
+    playerHand.addCard(deck.deal());
     cout << "Dealer's cards: ";
     dealerHand.printHand();
     cout << "\nPlayer's cards: ";
@@ -42,8 +40,7 @@ int main(/*int argc, char **argv*/){
     /* player play */
     while(playerHand.hit(P1HOLD)) {
       /* player requests the dealer to deal another card */
-      playerHand.m_hand.push_back(deck.deal());
-      playerHand.update();
+      playerHand.addCard(deck.deal());
       cout << "Player's cards: ";
       playerHand.printHand();
       cout << "value: " << playerHand.getVal() << "\n";
@@ -52,8 +49,7 @@ int main(/*int argc, char **argv*/){
     /* dealer play */
     while(dealerHand.hit(DLHOLD)) {
       /* deals a card to itself */
-      dealerHand.m_hand.push_back(deck.deal());
-      dealerHand.update();
+      dealerHand.addCard(deck.deal());
     }
     cout << "Dealer's cards: ";
     dealerHand.printHand();

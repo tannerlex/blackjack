@@ -95,8 +95,8 @@ class Hand {
     , m_softVal(false)
   {}
 
+  void addCard(Card c);
   int aceException(int aces, int handVal);
-  void update();
   int getVal(){return m_val;}
   int getSoft(){return m_softVal;}
   int getAces(){return m_aces;}
@@ -105,6 +105,7 @@ class Hand {
   vector<Card> m_hand; /* cards dealt to a player in round */
 
   private:
+  void update();
   int m_aces; /* number of aces */
   int m_val; /* value of hand */
   bool m_softVal; /* value is soft due to presence of Ace = 11 */
