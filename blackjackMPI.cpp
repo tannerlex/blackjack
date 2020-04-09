@@ -67,7 +67,7 @@ void dealerPlay(int size){
   Hand myHand;
   bool hold[size];
   for(int i=0;i<size;i++){ /* initialize all players to hit */
-  hold[i] = false;
+    hold[i] = false;
   }
 
   /* generate and shuffle deck */
@@ -117,8 +117,6 @@ void dealerPlay(int size){
   }
   cout << "Dealer's cards: ";
   myHand.printHand();
-  cout << "value: " << myHand.getVal() << "\n";
-  //deck.printDeck();
 } /* dealerPlay() */
 
 void playerPlay(int rank){
@@ -144,7 +142,6 @@ void playerPlay(int rank){
 
   cout << "\nPlayer " << rank << " hand: ";
   myHand.printHand();
-  cout << "value: " << myHand.getVal() << "\n";
 }
 
 int dealCard(int player, CardDeck &deck){

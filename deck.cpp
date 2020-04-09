@@ -32,6 +32,9 @@ void Hand::printHand(){ /* prints each card of hand in order */
   for(int i = 0; i < m_hand.size(); ++i){ /* for each card */
     cout << m_hand[i].printCard() << " "; /* print to console */
   }
+  cout << "value: ";
+  if(m_softVal){cout << "soft ";}
+  cout << m_val << "\n";
 }
 
 void CardDeck::deck52(){ /* create 52 cards to add to deck */

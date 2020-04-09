@@ -98,7 +98,7 @@ class Hand {
   int aceException(int aces, int handVal);
   void update();
   int getVal(){return m_val;}
-  int softVal(){return m_softVal;}
+  int getSoft(){return m_softVal;}
   int getAces(){return m_aces;}
   bool hit(int holdVal);
   void printHand();
