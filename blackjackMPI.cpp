@@ -14,6 +14,7 @@
 #define DLHOLD 16
 #define FACEUPTAG 2
 #define HITTAG 1
+#define INITDEAL 2
 #define MCW MPI_COMM_WORLD
 #define NUMDECKS 4
 #define TOTALROUNDS 5
@@ -27,13 +28,15 @@ int dealCard(int player, CardDeck &deck);
 void recvCard(Hand &curHand);
 
 int main(int argc, char **argv){
+  /* initialize MPI variables */
   int rank, size;
-  srand(time(0));
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MCW, &rank);
   MPI_Comm_size(MCW, &size);
 
+  /* algorithm setup */
   int running = TOTALROUNDS; /* number of rounds left to play */
+  srand(time(0));
 
   while(running--){ /* while there are still rounds left to play */
     if(DEALER == rank){ /* dealer */
@@ -44,7 +47,7 @@ int main(int argc, char **argv){
       playerPlay(rank);
     } /* end if player */
 
-    MPI_Barrier(MCW); /* catch everyone up for nice console printing */
+    MPI_Barrier(MCW); /* catch up for nice console printing */
   }
 
   /* notify user of end of play */
@@ -60,11 +63,13 @@ int main(int argc, char **argv){
 }
 
 void dealerPlay(int size){
+  /* this function executes the dealer's tasks for a round of play */
+  CardDeck deck(NUMDECKS); /* deck for the current round */
+  Hand dHand; /* dealer's hand for initializing vector of hands */
+  vector<Hand> hands; /* set of each players' hand for the round */
   /* hold[rank] = true: player is holding and can be ignored for 
   the rest of the round.
   hold[0] = true means all players are holding                */
-  CardDeck deck(NUMDECKS); /* deck for the current round */
-  Hand myHand;
   bool hold[size];
   for(int i=0;i<size;i++){ /* initialize all players to hit */
     hold[i] = false;
@@ -76,17 +81,21 @@ void dealerPlay(int size){
   // deck.printDeck();
 
   /* initial deal to all players */
-  for(int i = 1; i < size; i++){
-    dealCard(i,deck);
+  for(int j = 0; j < INITDEAL; ++j){
+    dHand.m_hand.push_back(deck.deal());
   }
-  myHand.m_hand.push_back(deck.deal());
+  hands.push_back(dHand); /* dealer's hand is index 0 */
   for(int i = 1; i < size; i++){
-    dealCard(i,deck);
+    Hand hnd;
+    for(int j = 0; j < INITDEAL; ++j){
+      Card crd(dealCard(i,deck));
+      hnd.m_hand.push_back(crd);
+    }
+    hands.push_back(hnd); /* add to set of all hands at the table */
   }
-  myHand.m_hand.push_back(deck.deal());
 
   /* inform players of dealer's face up card */
-  int dlrsFaceUp = myHand.m_hand[1].getUCV();
+  int dlrsFaceUp = hands[DEALER].m_hand[1].getUCV();
   for(int i = 1; i < size; ++i){
     MPI_Send(&dlrsFaceUp,1,MPI_INT,i,FACEUPTAG,MCW);
   }
@@ -101,7 +110,8 @@ void dealerPlay(int size){
         MPI_Recv(&hit,1,MPI_INT,i,HITTAG,MCW,MPI_STATUS_IGNORE);
 
         if(hit){ /* if player has not indicated hold status */
-          dealCard(i,deck); /* deal card to player */
+          Card crd(dealCard(i,deck)); /* deal card to player */
+          hands[i].m_hand.push_back(crd); /* add to player's hand */
           hold[0] = false; /* this player just hit, repeat loop */
         }
         hold[i] = !hit; /* update player status */
@@ -110,13 +120,13 @@ void dealerPlay(int size){
   } /* end while() still dealing round */
 
   /* dealer play */
-  while(myHand.hit(DLHOLD)) { /* while not holding */
+  while(hands[DEALER].hit(DLHOLD)) { /* while not holding */
     /* deals a card to itself */
-    myHand.m_hand.push_back(deck.deal());
-    myHand.update();
+    hands[DEALER].m_hand.push_back(deck.deal());
+    hands[DEALER].update();
   }
   cout << "Dealer's cards: ";
-  myHand.printHand();
+  hands[DEALER].printHand();
 } /* dealerPlay() */
 
 void playerPlay(int rank){
