@@ -34,6 +34,16 @@ void Hand::printHand(){ /* prints each card of hand in order */
   }
 }
 
+void CardDeck::deck52(){ /* create 52 cards to add to deck */
+  for(int suit = SPADE; suit <= CLUB; suit += SUITROW){/*ea. suit*/
+    for(int face = ACE; face <= KING; ++face){ /* foreach face */
+      if(face == KNIGHT){++face;}/* knight not used in blackjack */
+      Card card(suit + face); /* determine which card */
+      m_deck.push_back(card); /* add card to the deck */
+    } /* end for each face */
+  } /* end for each suit */
+}
+
 Card CardDeck::deal(){ /* deal a single card from the deck */
   Card rtn = m_deck.back();
   m_deck.pop_back();

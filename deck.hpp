@@ -68,17 +68,19 @@ class CardDeck {
      blackjack                                                     */
   public:
   CardDeck(){
-    // int i = 0;
     /* initialize a 52 card deck */
-    for(int suit = SPADE; suit <= CLUB; suit += SUITROW){/*ea. suit*/
-      for(int face = ACE; face <= KING; ++face){ /* foreach face */
-        if(face == KNIGHT){++face;}/* knight not used in blackjack */
-        Card card(suit + face); /* determine which card */
-        m_deck.push_back(card); /* add card to the deck */
-      } /* end for each face */
-    } /* end for each suit */
+    deck52();
   } /* end constructor */
 
+  CardDeck(const int numdecks){
+    /* initialize large deck of multiples of 52 cards from which
+       to play                                                     */
+    for(int i = 0; i < numdecks; ++i){ /* for each deck to add */
+      deck52(); /* add 52 cards to deck */
+    }
+  }
+
+  void deck52();
   void shuffle();
   void printDeck();
   Card deal();
