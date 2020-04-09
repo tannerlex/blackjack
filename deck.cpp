@@ -59,22 +59,18 @@ void Hand::update(){
     if(val == ACEVAL){++m_aces;}
   }
   m_val = aceException(m_aces, m_val);
-  if(m_aces){
-    int val = 0;
-    for(int i = 0; i < m_hand.size(); ++i){
-      val += m_hand[i].getFaceVal();
-    }
-    m_softVal = (val != m_val);
-  }
 }/* update() */
 
 int Hand::aceException(int aces, int handVal){
   /* The aceException function in the Hand class solves the hand
      value by accounting for the alternative values of aces. It
-     does this by a recursive method.                              */
+     does this by a recursive method. It also determines whether
+     the hand value is soft or hard                                */
   if(aces){
     if(handVal > BLACKJACK){
       handVal = aceException(aces-1, handVal - (ACEVAL - ACE));
+    } else {
+      m_softVal = true;
     }
   }
   return handVal;
