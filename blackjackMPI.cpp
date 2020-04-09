@@ -22,10 +22,11 @@
 using namespace std;
 
 /* function prototypes */
-void dealerPlay(int size);
+void dealerPlay(int *wins, int size);
 void playerPlay(int rank);
 int dealCard(int player, CardDeck &deck);
 void recvCard(Hand &curHand);
+void roundResults(Hand &pl, Hand &dl, int &pw, int &dw);
 
 int main(int argc, char **argv){
   /* initialize MPI variables */
@@ -36,11 +37,13 @@ int main(int argc, char **argv){
 
   /* algorithm setup */
   int running = TOTALROUNDS; /* number of rounds left to play */
+  int wins[size]; /* number of rounds each player has won */
+  for(int i = 0; i < size; ++i){wins[i] = 0;}
   srand(time(0));
 
   while(running--){ /* while there are still rounds left to play */
     if(DEALER == rank){ /* dealer */
-      dealerPlay(size);
+      dealerPlay(wins, size);
     } /* end if dealer */
 
     else { /* if player */
@@ -62,7 +65,7 @@ int main(int argc, char **argv){
   return 0;
 }
 
-void dealerPlay(int size){
+void dealerPlay(int *wins, int size){
   /* this function executes the dealer's tasks for a round of play */
   CardDeck deck(NUMDECKS); /* deck for the current round */
   Hand dHand; /* dealer's hand for initializing vector of hands */
@@ -127,6 +130,10 @@ void dealerPlay(int size){
   }
   cout << "Dealer's cards: ";
   hands[DEALER].printHand();
+
+  for(int i = 1; i < size; ++i){
+    roundResults(hands[i], hands[DEALER], wins[i], wins[DEALER]);
+  }
 } /* dealerPlay() */
 
 void playerPlay(int rank){
@@ -170,6 +177,31 @@ void recvCard(Hand &curHand){
   curHand.m_hand.push_back(recvCard); /* add card to hand */
   curHand.update(); /* update hand numbers */
 }
+
+void roundResults(Hand &pl, Hand &dl, int &pw, int &dw){
+  /* roundResults analyzes the final hands of a round and records 
+     and reports the results including incrementing the number of
+     player wins or dealer wins.                                   */
+  if((INITDEAL == pl.m_hand.size()) && (BLACKJACK == pl.getVal())){
+    cout << "Player has Blackjack!.\n";
+    pw++; /* chalk one up for the player */
+  } else if(pl.getVal() > BLACKJACK){
+    cout << "Player busts.\n";
+    dw++; /* chalk one up for the dealer */
+  } else if (dl.getVal() > BLACKJACK){
+    cout << "Dealer busts.\n";
+    pw++; /* chalk one up for the player */
+  } else if (dl.getVal() == pl.getVal()){
+    cout << "It's a push.\n";
+  } else if (dl.getVal() > pl.getVal()){
+    cout << "Dealer wins.\n";
+    dw++; /* chalk one up for the dealer */
+  } else {
+    cout << "Player wins.\n";
+    pw++; /* chalk one up for the player */
+  }
+} /* roundResults() */
+
 // TODO:
 // round results
 // strategy for each player
