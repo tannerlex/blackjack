@@ -9,34 +9,21 @@
 
 #include "deck.hpp"
 
-#define MCW MPI_COMM_WORLD
 #define DEALER 0
 #define DEALTAG 0
-#define HITTAG 1
 #define DLHOLD 16
+#define HITTAG 1
+#define MCW MPI_COMM_WORLD
+#define NUMDECKS 4
 #define TOTALROUNDS 5
 
 using namespace std;
 
-void dealerPlay(CardDeck &deck, int size);
+/* function prototypes */
+void dealerPlay(int size);
 void playerPlay(int rank);
-
-int dealCard(int player, CardDeck &deck){
-  /* deal a card to player */
-  Card sendCard(deck.deal()); /* pull card from deck */
-  int dealtCard = sendCard.getUCV(); /* unicode val of dealt card */
-  MPI_Send(&dealtCard,1,MPI_INT,player,DEALTAG,MCW); /* send card */
-  return dealtCard; /* used if tracking which cards were dealt */
-}
-
-void recvCard(Hand &curHand){
-  /* recieve a card into hand */
-  int card; /* unicode val of card being received */
-  MPI_Recv(&card,1,MPI_INT,0,DEALTAG,MCW,MPI_STATUS_IGNORE);
-  Card recvCard(card); /* create a card object from unicode val */
-  curHand.m_hand.push_back(recvCard); /* add card to hand */
-  curHand.update(); /* update hand numbers */
-}
+int dealCard(int player, CardDeck &deck);
+void recvCard(Hand &curHand);
 
 int main(int argc, char **argv){
   int rank, size;
@@ -48,10 +35,8 @@ int main(int argc, char **argv){
   int running = TOTALROUNDS; /* number of rounds left to play */
 
   while(running--){ /* while there are still rounds left to play */
-    CardDeck deck; /* deck for the current round */
-
     if(DEALER == rank){ /* dealer */
-      dealerPlay(deck, size);
+      dealerPlay(size);
     } /* end if dealer */
 
     else { /* if player */
@@ -73,10 +58,11 @@ int main(int argc, char **argv){
   return 0;
 }
 
-void dealerPlay(CardDeck &deck, int size){
+void dealerPlay(int size){
   /* hold[rank] = true: player is holding and can be ignored for 
   the rest of the round.
   hold[0] = true means all players are holding                */
+  CardDeck deck(NUMDECKS); /* deck for the current round */
   Hand myHand;
   bool hold[size];
   for(int i=0;i<size;i++){ /* initialize all players to hit */
@@ -147,6 +133,23 @@ void playerPlay(int rank){
   cout << "\nPlayer " << rank << " hand: ";
   myHand.printHand();
   cout << "value: " << myHand.getVal() << "\n";
+}
+
+int dealCard(int player, CardDeck &deck){
+  /* deal a card to player */
+  Card sendCard(deck.deal()); /* pull card from deck */
+  int dealtCard = sendCard.getUCV(); /* unicode val of dealt card */
+  MPI_Send(&dealtCard,1,MPI_INT,player,DEALTAG,MCW); /* send card */
+  return dealtCard; /* used if tracking which cards were dealt */
+}
+
+void recvCard(Hand &curHand){
+  /* recieve a card into hand */
+  int card; /* unicode val of card being received */
+  MPI_Recv(&card,1,MPI_INT,0,DEALTAG,MCW,MPI_STATUS_IGNORE);
+  Card recvCard(card); /* create a card object from unicode val */
+  curHand.m_hand.push_back(recvCard); /* add card to hand */
+  curHand.update(); /* update hand numbers */
 }
 // TODO:
 // round results

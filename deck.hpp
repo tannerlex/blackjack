@@ -72,7 +72,7 @@ class CardDeck {
     deck52();
   } /* end constructor */
 
-  CardDeck(const int numdecks){
+  explicit CardDeck(const int numdecks){
     /* initialize large deck of multiples of 52 cards from which
        to play                                                     */
     for(int i = 0; i < numdecks; ++i){ /* for each deck to add */
@@ -92,6 +92,7 @@ class Hand {
   Hand()
     : m_aces(0)
     , m_val(0)
+    , m_softVal(false)
   {}
 
   int aceException(int aces, int handVal);
