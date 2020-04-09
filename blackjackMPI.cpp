@@ -12,6 +12,7 @@
 #define DEALER 0
 #define DEALTAG 0
 #define DLHOLD 16
+#define FACEUPTAG 2
 #define HITTAG 1
 #define MCW MPI_COMM_WORLD
 #define NUMDECKS 4
@@ -70,9 +71,9 @@ void dealerPlay(int size){
   }
 
   /* generate and shuffle deck */
-  cout << "Shuffling deck... ";
+  cout << "Shuffling deck...\n";
   deck.shuffle();
-  deck.printDeck();
+  // deck.printDeck();
 
   /* initial deal to all players */
   for(int i = 1; i < size; i++){
@@ -83,6 +84,12 @@ void dealerPlay(int size){
     dealCard(i,deck);
   }
   myHand.m_hand.push_back(deck.deal());
+
+  /* inform players of dealer's face up card */
+  int dlrsFaceUp = myHand.m_hand[1].getUCV();
+  for(int i = 1; i < size; ++i){
+    MPI_Send(&dlrsFaceUp,1,MPI_INT,i,FACEUPTAG,MCW);
+  }
 
   //   playRound();
   while(!hold[0]){ /* while still dealing round */
@@ -120,6 +127,11 @@ void playerPlay(int rank){
   /* receive 1st 2 cards */
   recvCard(myHand);
   recvCard(myHand);
+
+  /* receive dealer's face up card */
+  int dlrsFaceUp;
+  MPI_Recv(&dlrsFaceUp,1,MPI_INT,0,FACEUPTAG,MCW,MPI_STATUS_IGNORE);
+  Card dfu(dlrsFaceUp);
 
   int hit = myHand.hit(16); /* determine whether to hit */
   MPI_Send(&hit,1,MPI_INT,0,HITTAG,MCW); /* tell dealer */
