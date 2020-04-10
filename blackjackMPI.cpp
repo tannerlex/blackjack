@@ -125,7 +125,7 @@ void dealerPlay(int *wins, int *ties, int size){
     } /* end for each player */
   } /* end while() still dealing round */
 
-  /* dealer play */
+  /* dealer plays own hand */
   while(hands[DEALER].hit(DEALER)) { /* while not holding */
     /* deals a card to itself */
     hands[DEALER].addCard(deck.deal());

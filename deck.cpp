@@ -63,23 +63,24 @@ Card CardDeck::deal(){ /* deal a single card from the deck */
 
 bool Hand::hit(int rank){ /* determine whether to hit or not */
   bool hit;
-  switch (rank)
+  switch (rank) /* determine hit strategy based on rank */
   {
-    case DEALER:{
-      if(m_softVal){
-        hit = m_val < DLSFTHLD;
-      } else {
-        hit = m_val < DLHOLD;
+    case DEALER:{ /* hit strategy for dealer */
+      if(m_softVal){ /* if it has a soft value */
+        hit = m_val < DLSFTHLD; /* use the soft value threshold */
+      } else {/* hard value */
+        hit = m_val < DLHOLD; /* use hard value threshold */
       }
       break;
     }
-    default:{
-      hit = m_val < (LWSTHOLD + rank);
+    default:{ /* hit strategy for any player other than the dealer */
+      /* use the -np param and LWSTHOLD to get strategies results */
+      hit = m_val < (LWSTHOLD + rank);/* get a spread of strategy */
       break;
     }
-  }
+  } /* end switch on rank */
   return hit;
-}
+}/* hit() */
 
 void Hand::update(){
   /* The update function for the Hand class is used to track the
