@@ -17,7 +17,7 @@
 #define INITDEAL 2
 #define MCW MPI_COMM_WORLD
 #define NUMDECKS 4
-#define TOTALROUNDS 500
+#define TOTALROUNDS 15000
 
 using namespace std;
 
@@ -219,9 +219,10 @@ void printResults(int *wins, int *ties, int size){
   /* print dealer results */
   cout << "Results of " << TOTALROUNDS << " rounds:\n";
   cout << "The dealer won " << wins[DEALER] << " rounds (";
-  cout << wins[DEALER]*100.0/TOTALROUNDS/size << "%), and had ";
-  cout << ties[DEALER] << " rounds ( ";
-  cout << ties[DEALER]*100.0/TOTALROUNDS << "%) end in a push.\n";
+  cout << wins[DEALER]*100.0/TOTALROUNDS/(size-1.0) << "%), and had ";
+  cout << ties[DEALER] << " rounds (";
+  cout << ties[DEALER]*100.0/TOTALROUNDS/(size-1.0);
+  cout << "%) end in a push.\n";
 
   /* print player results */
   for(int i = 1; i < size; ++i){
