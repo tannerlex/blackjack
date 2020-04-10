@@ -6,6 +6,7 @@ using namespace std;
 
 #define BLACKJACK 21
 #define ACEVAL 11
+#define DEALER 0
 
 /* unicode values for playing card characters */
 #define SPADE 0x1F0A0
@@ -100,7 +101,7 @@ class Hand {
   int getVal(){return m_val;}
   int getSoft(){return m_softVal;}
   int getAces(){return m_aces;}
-  bool hit(int holdVal);
+  bool hit(int rank);
   void printHand();
   vector<Card> m_hand; /* cards dealt to a player in round */
 

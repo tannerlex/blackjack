@@ -9,9 +9,7 @@
 
 #include "deck.hpp"
 
-#define DEALER 0
 #define DEALTAG 0
-#define DLHOLD 16
 #define FACEUPTAG 2
 #define HITTAG 1
 #define INITDEAL 2
@@ -128,7 +126,7 @@ void dealerPlay(int *wins, int *ties, int size){
   } /* end while() still dealing round */
 
   /* dealer play */
-  while(hands[DEALER].hit(DLHOLD)) { /* while not holding */
+  while(hands[DEALER].hit(DEALER)) { /* while not holding */
     /* deals a card to itself */
     hands[DEALER].addCard(deck.deal());
   }
@@ -158,12 +156,12 @@ void playerPlay(int rank){
   MPI_Recv(&dlrsFaceUp,1,MPI_INT,0,FACEUPTAG,MCW,MPI_STATUS_IGNORE);
   Card dfu(dlrsFaceUp);
 
-  int hit = myHand.hit(16); /* determine whether to hit */
+  int hit = myHand.hit(rank); /* determine whether to hit */
   MPI_Send(&hit,1,MPI_INT,0,HITTAG,MCW); /* tell dealer */
 
   while(hit){ /* if a hit is called for */
     recvCard(myHand); /* receive the next card */
-    hit = myHand.hit(16); /* determine whether to hit again */
+    hit = myHand.hit(rank); /* determine whether to hit again */
     MPI_Send(&hit,1,MPI_INT,0,HITTAG,MCW); /* tell dealer */
   }
 

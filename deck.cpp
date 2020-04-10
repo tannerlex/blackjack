@@ -3,6 +3,10 @@
 #include <time.h> /* used to seed rand with current time */
 using namespace std;
 
+#define DLHOLD 16
+#define DLSFTHLD 17
+#define LWSTHOLD 12
+
 /* unicode values for playing card characters */
 #define BACK "🂠"
 #define HEART 0x1F0B0
@@ -58,8 +62,24 @@ Card CardDeck::deal(){ /* deal a single card from the deck */
   return rtn;
 }/* deal() */
 
-bool Hand::hit(int holdVal){ /* determine whether to hit or not */
-  return m_val < holdVal;
+bool Hand::hit(int rank){ /* determine whether to hit or not */
+  bool hit;
+  switch (rank)
+  {
+    case DEALER:{
+      if(m_softVal){
+        hit = m_val < DLSFTHLD;
+      } else {
+        hit = m_val < DLHOLD;
+      }
+      break;
+    }
+    default:{
+      hit = m_val < (LWSTHOLD + rank);
+      break;
+    }
+  }
+  return hit;
 }
 
 void Hand::update(){
