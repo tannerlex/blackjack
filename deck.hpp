@@ -7,6 +7,7 @@ using namespace std;
 #define BLACKJACK 21
 #define ACEVAL 11
 #define DEALER 0
+#define LWSTHOLD 12
 
 /* unicode values for playing card characters */
 #define SPADE 0x1F0A0

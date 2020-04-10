@@ -5,7 +5,6 @@ using namespace std;
 
 #define DLHOLD 16
 #define DLSFTHLD 17
-#define LWSTHOLD 12
 
 /* unicode values for playing card characters */
 #define BACK "🂠"

@@ -227,7 +227,8 @@ void printResults(int *wins, int *ties, int size){
     cout << "Player " << i << " won " << wins[i] << " rounds (";
     cout << wins[i]*100.0/TOTALROUNDS << "%), and had ";
     cout << ties[i] << " rounds (" << ties[i]*100.0/TOTALROUNDS;
-    cout << "%) end in a push.\n";
+    cout << "%) end in a push using a strategy of hit on ";
+    cout << i + LWSTHOLD - 1 << ".\n";
   }
 }
 
