@@ -7,7 +7,8 @@ using namespace std;
 #define BLACKJACK 21
 #define ACEVAL 11
 #define DEALER 0
-#define LWSTHOLD 12
+#define LWSTHOLD 5
+/* run with 16 processors to make data for holding strategies 6-20 */
 
 /* unicode values for playing card characters */
 #define SPADE 0x1F0A0

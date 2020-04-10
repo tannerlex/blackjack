@@ -106,7 +106,7 @@ void dealerPlay(int *wins, int *ties, int size){
     MPI_Send(&dlrsFaceUp,1,MPI_INT,i,FACEUPTAG,MCW);
   }
 
-  //   playRound();
+  /* play through the rest of the round */
   while(!hold[0]){ /* while still dealing round */
     hold[0] = true; /* reset to hold */
 
@@ -133,7 +133,8 @@ void dealerPlay(int *wins, int *ties, int size){
   cout << "Dealer's cards: ";
   hands[DEALER].printHand();
 
-  for(int i = 1; i < size; ++i){
+  for(int i = 1; i < size; ++i){ /* for each player */
+    /* determine the resulting metrics from this round */
     roundResults(
       hands[i], 
       hands[DEALER], 
@@ -141,7 +142,7 @@ void dealerPlay(int *wins, int *ties, int size){
       wins[DEALER], 
       ties[i], 
       ties[DEALER]);
-  }
+  } /* end for each player */
 } /* dealerPlay() */
 
 void playerPlay(int rank){
@@ -231,6 +232,3 @@ void printResults(int *wins, int *ties, int size){
     cout << i + LWSTHOLD - 1 << ".\n";
   }
 }
-
-// TODO:
-// strategy for each player
